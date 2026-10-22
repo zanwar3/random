@@ -253,18 +253,30 @@ def webhook(source: str, body: dict):
 
 
 @app.get("/api/lineage")
-def lineage(limit: int = 80):
+def lineage(limit: int = 80, after_id: int | None = None):
     limit = max(1, min(limit, 200))
     with pool().connection() as conn:
-        rows = conn.execute(
-            """
-            SELECT id, ts, run_id, entity_id, source, stage, message
-            FROM lineage_event
-            ORDER BY id DESC
-            LIMIT %s
-            """,
-            (limit,),
-        ).fetchall()
+        if after_id is not None:
+            rows = conn.execute(
+                """
+                SELECT id, ts, run_id, entity_id, source, stage, message, detail
+                FROM lineage_event
+                WHERE id > %s
+                ORDER BY id ASC
+                LIMIT %s
+                """,
+                (after_id, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT id, ts, run_id, entity_id, source, stage, message, detail
+                FROM lineage_event
+                ORDER BY id DESC
+                LIMIT %s
+                """,
+                (limit,),
+            ).fetchall()
     return {"events": rows}
 
 
@@ -316,7 +328,7 @@ def entity_detail(id: str):
             raise HTTPException(status_code=404, detail="record not in the hub")
         versions = conn.execute(
             """
-            SELECT version, content_hash, title, modified_at, ingested_at, change_type, raw_blob_path
+            SELECT version, content_hash, title, body, modified_at, ingested_at, change_type, raw_blob_path
             FROM entity_version WHERE entity_id = %s ORDER BY version DESC
             """,
             (id,),

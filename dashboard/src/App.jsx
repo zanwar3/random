@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import { PresentScreen } from "./present/PresentScreen";
 import { ContextScreen } from "./screens/Context";
 import { GraphScreen } from "./screens/Graph";
 import { InspectorScreen } from "./screens/Inspector";
@@ -37,6 +38,14 @@ export function App() {
   const [busy, setBusy] = useState(false);
   const [selectedId, setSelectedId] = useState("sharepoint:BR-101");
   const [tick, setTick] = useState(0);
+  const [presenting, setPresenting] = useState(() => window.location.hash === "#present");
+
+  useEffect(() => {
+    const next = presenting ? "#present" : "";
+    if (window.location.hash !== next) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${next}`);
+    }
+  }, [presenting]);
 
   useEffect(() => {
     let stop = false;
@@ -82,6 +91,10 @@ export function App() {
     setView("inspector");
   }
 
+  if (presenting) {
+    return <PresentScreen onExit={() => setPresenting(false)} />;
+  }
+
   return (
     <div className="app">
       <aside className="rail">
@@ -89,6 +102,9 @@ export function App() {
           <p className="brand-kicker">ClaimPath</p>
           <p className="brand">Context Hub</p>
         </div>
+        <button type="button" className="present-launch" onClick={() => setPresenting(true)}>
+          Present the flow
+        </button>
         <nav className="nav" aria-label="Sections">
           {VIEWS.map(([id, label]) => (
             <button key={id} type="button" aria-current={view === id ? "page" : undefined} onClick={() => setView(id)}>

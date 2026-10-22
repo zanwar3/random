@@ -91,6 +91,17 @@ button:disabled { cursor: wait; opacity: 0.55; }
   letter-spacing: -0.03em;
 }
 
+.present-launch {
+  background: #5ad1c4;
+  color: #071015;
+  font-weight: 700;
+  padding: 0.55rem 0.6rem;
+  border-radius: 2px;
+  text-align: left;
+}
+
+.present-launch:hover { background: #7ee0d5; }
+
 .nav { display: flex; flex-direction: column; gap: 0.25rem; }
 
 .nav button, .situation button, .text-button, .solid-button {
